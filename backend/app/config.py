@@ -42,6 +42,12 @@ class Settings(BaseSettings):
         description="Clerk secret key. Set as CLERK_SECRET_KEY in .env"
     )
     
+    # GitHub API - Read from environment variables only (sensitive, optional)
+    github_token: Optional[str] = Field(
+        default=None,
+        description="GitHub personal access token for authenticated API requests. Set as GITHUB_TOKEN in .env. Optional but recommended for higher rate limits."
+    )
+    
     # API & CORS
     api_base_url: str = Field(
         default="http://localhost:8000",

@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
-from app.routers import dashboard, projects
+from app.routers import dashboard, projects, marketplace
 from app.config import settings
 
 # Load environment variables
@@ -33,6 +33,7 @@ app.add_middleware(
 # Register routers
 app.include_router(dashboard.router)
 app.include_router(projects.router)
+app.include_router(marketplace.router)
 
 
 @app.get("/")

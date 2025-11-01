@@ -5,17 +5,13 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/marketplace(.*)",
+  "/editor(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
   const url = req.nextUrl.clone();
-
-  // Redirect authenticated users from home page to dashboard
-  if (userId && url.pathname === "/") {
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
-  }
 
   // Protect dashboard route - require authentication
   if (!userId && url.pathname === "/dashboard") {

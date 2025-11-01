@@ -1,9 +1,10 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { Marketplace } from "@/components/marketplace/marketplace";
 
 export default function Home() {
   return (
     <main className="container mx-auto px-4 py-16 md:py-24">
-      <div className="max-w-4xl mx-auto text-center">
+      <div className="max-w-4xl mx-auto text-center mb-16">
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight">
           Welcome to{" "}
           <span className="text-primary">OpenForge</span>
@@ -22,6 +23,8 @@ export default function Home() {
           </p>
         </SignedIn>
       </div>
+      
+      <Marketplace />
     </main>
   );
 }
