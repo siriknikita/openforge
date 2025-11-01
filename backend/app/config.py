@@ -73,9 +73,16 @@ class Settings(BaseSettings):
         """Get allowed CORS origins based on environment"""
         origins = ["http://localhost:3000", "http://localhost:3001"]
         if self.frontend_url:
-            origins.append(self.frontend_url)
-            # Also add with trailing slash removed if present
-            origins.append(self.frontend_url.rstrip("/"))
+            frontend_url = self.frontend_url.rstrip("/")
+            origins.append(frontend_url)
+            # Normalize and add variations (with/without trailing slash, with/without www)
+            if frontend_url.startswith("https://"):
+                base_url = frontend_url.replace("https://", "").replace("www.", "")
+                # Add variations for Vercel deployments (preview deployments use different subdomains)
+                origins.append(f"https://{base_url}")
+                if not frontend_url.startswith("https://www."):
+                    origins.append(f"https://www.{base_url}")
+        
         return origins
     
     @field_validator('mongodb_url')

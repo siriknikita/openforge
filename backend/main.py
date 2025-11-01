@@ -51,6 +51,17 @@ async def health():
     }
 
 
+@app.get("/api/cors-debug")
+async def cors_debug():
+    """Debug endpoint to check CORS configuration."""
+    return {
+        "allowed_origins": settings.allowed_origins,
+        "environment": settings.environment,
+        "frontend_url": settings.frontend_url,
+        "is_production": settings.is_production,
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
 

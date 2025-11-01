@@ -2,7 +2,15 @@
  * API client for dashboard data
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+
+/**
+ * Helper function to construct API URLs without double slashes
+ */
+function buildApiUrl(path: string): string {
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${API_BASE_URL}${cleanPath}`;
+}
 
 export interface DashboardData {
   user: {
@@ -63,13 +71,12 @@ export interface Project {
 export async function fetchDashboardData(
   clerkUserId: string
 ): Promise<DashboardData> {
-  const response = await fetch(`${API_BASE_URL}/api/dashboard?user_id=${clerkUserId}`, {
+  const response = await fetch(buildApiUrl(`/api/dashboard?user_id=${clerkUserId}`), {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
     },
-    // Note: In production, pass Clerk JWT token in Authorization header
-    // credentials: 'include',
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -87,13 +94,14 @@ export async function toggleProjectStar(
   clerkUserId: string
 ): Promise<{ starred: boolean }> {
   const response = await fetch(
-    `${API_BASE_URL}/api/projects/${projectId}/star`,
+    buildApiUrl(`/api/projects/${projectId}/star`),
     {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ user_id: clerkUserId }),
+      credentials: 'include',
     }
   );
 
