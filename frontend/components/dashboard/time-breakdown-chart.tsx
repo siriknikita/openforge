@@ -1,6 +1,6 @@
 "use client";
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface TimeBreakdownChartProps {
@@ -89,7 +89,7 @@ export function TimeBreakdownChart({
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) =>
+                label={({ name, percent }: { name: string; percent: number }) =>
                   `${name}: ${(percent * 100).toFixed(0)}%`
                 }
                 outerRadius={80}
@@ -101,7 +101,6 @@ export function TimeBreakdownChart({
                 ))}
               </Pie>
               <Tooltip formatter={formatTooltip} />
-              <Legend />
             </PieChart>
           </ResponsiveContainer>
           <div className="grid grid-cols-2 gap-4 text-sm">
