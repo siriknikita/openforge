@@ -91,6 +91,13 @@ class Settings(BaseSettings):
         
         return origins
     
+    @property
+    def allowed_origin_regex(self) -> str:
+        """Get regex pattern for allowed CORS origins (supports Vercel preview URLs)"""
+        # Pattern to match Vercel preview deployments: *-{hash}-{project}.vercel.app
+        # Also matches production: {project}.vercel.app
+        return r"https://.*\.vercel\.app$"
+    
     @field_validator('mongodb_url')
     @classmethod
     def validate_mongodb_url(cls, v: str) -> str:

@@ -21,13 +21,16 @@ app = FastAPI(
 
 # CORS middleware configuration
 # Allowed origins are dynamically configured based on environment
+# Supports Vercel preview deployments via regex pattern
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
+    allow_origin_regex=settings.allowed_origin_regex,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Register routers
@@ -57,6 +60,7 @@ async def cors_debug():
     """Debug endpoint to check CORS configuration."""
     return {
         "allowed_origins": settings.allowed_origins,
+        "allowed_origin_regex": settings.allowed_origin_regex,
         "environment": settings.environment,
         "frontend_url": settings.frontend_url,
         "is_production": settings.is_production,
