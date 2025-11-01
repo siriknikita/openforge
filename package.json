@@ -1,0 +1,21 @@
+{
+  "name": "openforge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenForge - AI-Assisted Open Source Collaboration Platform",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && uv run uvicorn main:app --reload",
+    "build:frontend": "cd frontend && npm run build",
+    "start:frontend": "cd frontend && npm run start",
+    "lint:frontend": "cd frontend && npm run lint"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
+

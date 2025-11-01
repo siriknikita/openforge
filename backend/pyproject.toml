@@ -1,0 +1,11 @@
+[project]
+name = "openforge-backend"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.120.4",
+    "pymongo>=4.15.3",
+    "python-dotenv>=1.2.1",
+    "uvicorn[standard]>=0.38.0",
+]
