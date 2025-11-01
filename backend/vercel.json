@@ -1,13 +1,4 @@
 {
-  "buildCommand": "uv sync",
-  "outputDirectory": ".",
-  "framework": null,
-  "installCommand": "uv sync",
-  "functions": {
-    "api/**/*.py": {
-      "runtime": "python3.11"
-    }
-  },
   "rewrites": [
     {
       "source": "/(.*)",

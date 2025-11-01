@@ -38,15 +38,18 @@ This guide explains how to deploy the OpenForge monorepo to Vercel with separate
    - **Project Name**: `openforge-backend` (or your preferred name)
    - **Root Directory**: `backend`
    - **Framework Preset**: Other
-   - **Build Command**: `uv sync`
-   - **Output Directory**: `.` (leave empty or use `.`)
-   - **Install Command**: `uv sync`
+   - **Build Command**: (leave empty - Vercel will auto-detect Python)
+   - **Output Directory**: (leave empty)
+   - **Install Command**: (leave empty - Vercel will use `requirements.txt`)
+
+**Important**: Vercel will automatically detect Python files in the `api/` directory and use the Python runtime. No runtime specification is needed in `vercel.json`.
 
 ### 2.2 Configure Backend Environment Variables
 
 In the Vercel project settings, add these environment variables:
 
-#### For Development Environment:
+#### For Development Environment
+
 ```
 ENVIRONMENT=dev
 MONGODB_URL=mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority
@@ -55,7 +58,8 @@ FRONTEND_URL=http://localhost:3000
 CLERK_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxxxxx
 ```
 
-#### For Production Environment:
+#### For Production Environment
+
 ```
 ENVIRONMENT=prod
 MONGODB_URL=mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority
@@ -64,38 +68,29 @@ FRONTEND_URL=https://your-frontend-url.vercel.app
 CLERK_SECRET_KEY=sk_live_xxxxxxxxxxxxxxxxxxxxx
 ```
 
-**Note**: 
+**Note**:
+
 - The database name will automatically be set to `openforge-dev` or `openforge-prod` based on `ENVIRONMENT`, but you can override with `MONGODB_DB_NAME`
 - `FRONTEND_URL` should match your frontend deployment URL
 - Use different Clerk keys for dev and prod if you have separate Clerk applications
 
-### 2.3 Install uv on Vercel
+### 2.3 Python Dependencies on Vercel
 
-Vercel doesn't have `uv` installed by default. You have two options:
+Vercel will automatically install Python dependencies from `requirements.txt`. The `requirements.txt` file is already included in the backend directory and contains all necessary dependencies.
 
-**Option A: Use Vercel Build Command (Recommended)**
-Update your build command to install `uv` first:
+**Note**: Vercel's Python runtime will automatically:
+
+1. Detect Python files in the `api/` directory
+2. Install dependencies from `requirements.txt`
+3. Use Python 3.11 runtime (as specified in `pyproject.toml`)
+
+If you need to use `uv` instead, you can set a custom build command:
 
 ```bash
 pip install uv && uv sync
 ```
 
-**Option B: Add requirements.txt (Alternative)**
-If `uv` doesn't work, create a `requirements.txt` in the backend directory:
-
-```bash
-fastapi>=0.120.4
-pymongo>=4.15.3
-python-dotenv>=1.2.1
-pydantic-settings>=2.0.0
-uvicorn[standard]>=0.38.0
-mangum>=0.18.0
-```
-
-Then update the build command to:
-```bash
-pip install -r requirements.txt
-```
+However, using `requirements.txt` is recommended as it's the standard approach for Vercel Python deployments.
 
 ### 2.4 Deploy
 
@@ -119,21 +114,24 @@ pip install -r requirements.txt
 
 In the Vercel project settings, add these environment variables:
 
-#### For Development Environment:
+#### For Development Environment
+
 ```
 NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxx
 CLERK_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxxxxx
 ```
 
-#### For Production Environment:
+#### For Production Environment
+
 ```
 NEXT_PUBLIC_API_URL=https://openforge-backend.vercel.app
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_xxxxxxxxxxxxxxxxxxxxx
 CLERK_SECRET_KEY=sk_live_xxxxxxxxxxxxxxxxxxxxx
 ```
 
-**Important**: 
+**Important**:
+
 - `NEXT_PUBLIC_API_URL` must match your backend deployment URL
 - Use production Clerk keys for production environment
 - Variables prefixed with `NEXT_PUBLIC_` are exposed to the browser
@@ -157,16 +155,19 @@ After deploying the frontend, update the backend's `FRONTEND_URL` environment va
 ### 5.1 Frontend Setup
 
 1. Navigate to the `frontend` directory:
+
    ```bash
    cd frontend
    ```
 
 2. Copy the example environment file:
+
    ```bash
    cp env.example .env.local
    ```
 
 3. Update `.env.local` with your local values:
+
    ```bash
    NEXT_PUBLIC_API_URL=http://localhost:8000
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxx
@@ -174,6 +175,7 @@ After deploying the frontend, update the backend's `FRONTEND_URL` environment va
    ```
 
 4. Install dependencies and run:
+
    ```bash
    npm install
    npm run dev
@@ -182,16 +184,19 @@ After deploying the frontend, update the backend's `FRONTEND_URL` environment va
 ### 5.2 Backend Setup
 
 1. Navigate to the `backend` directory:
+
    ```bash
    cd backend
    ```
 
 2. Copy the example environment file:
+
    ```bash
    cp env.example .env
    ```
 
 3. Update `.env` with your local values:
+
    ```bash
    ENVIRONMENT=dev
    MONGODB_URL=mongodb://localhost:27017
@@ -200,6 +205,7 @@ After deploying the frontend, update the backend's `FRONTEND_URL` environment va
    ```
 
 4. Install dependencies and run:
+
    ```bash
    uv sync
    uv run uvicorn main:app --reload
@@ -208,6 +214,7 @@ After deploying the frontend, update the backend's `FRONTEND_URL` environment va
 ### 5.3 Run Both Locally
 
 From the root directory:
+
 ```bash
 # Terminal 1: Frontend
 npm run dev:frontend
@@ -241,13 +248,16 @@ npm run dev:backend
 ### Backend Issues
 
 **Problem**: `uv` command not found
+
 - **Solution**: Use `pip install uv && uv sync` in build command, or use `requirements.txt`
 
 **Problem**: CORS errors in production
+
 - **Solution**: Ensure `FRONTEND_URL` is set correctly in backend environment variables
 
 **Problem**: Database connection errors
-- **Solution**: 
+
+- **Solution**:
   - Verify MongoDB connection string
   - Check network access in MongoDB Atlas
   - Ensure database name matches (`openforge-dev` or `openforge-prod`)
@@ -255,17 +265,21 @@ npm run dev:backend
 ### Frontend Issues
 
 **Problem**: API calls failing
+
 - **Solution**: Check `NEXT_PUBLIC_API_URL` matches your backend deployment URL
 
 **Problem**: Clerk authentication not working
+
 - **Solution**: Verify Clerk keys are correct and match the environment (test vs live)
 
 ### General Issues
 
 **Problem**: Changes not deploying
+
 - **Solution**: Ensure you're pushing to the correct branch and Vercel is watching that branch
 
 **Problem**: Environment variables not updating
+
 - **Solution**: Redeploy after changing environment variables
 
 ## Project Structure
@@ -301,4 +315,3 @@ openforge/
 - [FastAPI on Vercel](https://vercel.com/docs/functions/serverless-functions/runtimes/python)
 - [Next.js on Vercel](https://vercel.com/docs/frameworks/nextjs)
 - [MongoDB Atlas](https://www.mongodb.com/docs/atlas/)
-

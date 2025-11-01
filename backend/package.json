@@ -1,0 +1,12 @@
+{
+  "name": "openforge-backend",
+  "version": "0.1.0",
+  "description": "OpenForge Backend API",
+  "engines": {
+    "node": "18.x"
+  },
+  "scripts": {
+    "build": "echo 'Build handled by Vercel'"
+  }
+}
+
