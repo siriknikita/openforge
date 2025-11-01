@@ -1,0 +1,239 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
+import { UserRank } from "@/components/dashboard/user-rank";
+import { StatsCard } from "@/components/dashboard/stats-card";
+import { TimeBreakdownChart } from "@/components/dashboard/time-breakdown-chart";
+import { ProjectList } from "@/components/dashboard/project-list";
+import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  fetchDashboardData,
+  DashboardData,
+  Project,
+} from "@/lib/api/dashboard";
+import {
+  FolderPlus,
+  Users,
+  GitCommit,
+  GitPullRequest,
+  CheckCircle,
+  Code,
+  Clock,
+} from "lucide-react";
+
+export default function DashboardPage() {
+  const { user, isLoaded } = useUser();
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    if (!user) {
+      setError("Please sign in to view your dashboard");
+      setIsLoading(false);
+      return;
+    }
+
+    const loadDashboardData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await fetchDashboardData(user.id);
+        setDashboardData(data);
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load dashboard data"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, [user, isLoaded]);
+
+  const handleStarToggle = (projectId: string, starred: boolean) => {
+    if (!dashboardData) return;
+
+    // Update local state optimistically
+    const updateProjectStar = (projects: Project[]) =>
+      projects.map((p) => (p.id === projectId ? { ...p, starred } : p));
+
+    const updatedOwned = updateProjectStar(dashboardData.projects.owned);
+    const updatedContributed = updateProjectStar(
+      dashboardData.projects.contributed
+    );
+
+    // Update starred list
+    let updatedStarred = [...dashboardData.projects.starred];
+    if (starred) {
+      // Add to starred if not already there
+      const project =
+        updatedOwned.find((p) => p.id === projectId) ||
+        updatedContributed.find((p) => p.id === projectId);
+      if (project && !updatedStarred.find((p) => p.id === projectId)) {
+        updatedStarred.push({ ...project, starred: true });
+      }
+    } else {
+      // Remove from starred
+      updatedStarred = updatedStarred.filter((p) => p.id !== projectId);
+    }
+
+    setDashboardData({
+      ...dashboardData,
+      projects: {
+        owned: updatedOwned,
+        contributed: updatedContributed,
+        starred: updatedStarred,
+      },
+    });
+  };
+
+  if (!isLoaded || isLoading) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <DashboardSkeleton />
+      </main>
+    );
+  }
+
+  if (error || !dashboardData) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-destructive">
+              {error || "Failed to load dashboard"}
+            </p>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+
+  const timeSavedHours = dashboardData.stats.timeSavedMinutes / 60;
+
+  return (
+    <main className="container mx-auto px-4 py-8 space-y-6">
+      {/* User Rank Section */}
+      <UserRank
+        name={dashboardData.user.name}
+        avatarUrl={dashboardData.user.avatarUrl}
+        xp={dashboardData.user.xp}
+        level={dashboardData.user.level}
+      />
+
+      {/* Stats Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard
+          title="New Projects"
+          value={dashboardData.stats.newProjects}
+          icon={FolderPlus}
+          description="Projects you created"
+        />
+        <StatsCard
+          title="Joined Projects"
+          value={dashboardData.stats.joinedProjects}
+          icon={Users}
+          description="Projects you contributed to"
+        />
+        <StatsCard
+          title="Total Commits"
+          value={dashboardData.stats.commits}
+          icon={GitCommit}
+          description="All-time commits"
+        />
+        <StatsCard
+          title="Pull Requests"
+          value={dashboardData.stats.pullRequests}
+          icon={GitPullRequest}
+          description="PRs merged"
+        />
+        <StatsCard
+          title="Issues Closed"
+          value={dashboardData.stats.issuesClosed}
+          icon={CheckCircle}
+          description="Issues resolved"
+        />
+        <StatsCard
+          title="Lines of Code"
+          value={dashboardData.stats.linesOfCode}
+          icon={Code}
+          description="Total LOC contributed"
+        />
+        <StatsCard
+          title="Time Saved"
+          value={
+            timeSavedHours >= 1
+              ? `${timeSavedHours.toFixed(1)}h`
+              : `${dashboardData.stats.timeSavedMinutes}m`
+          }
+          icon={Clock}
+          description="Setup time saved"
+        />
+      </div>
+
+      {/* Time Breakdown Chart */}
+      <TimeBreakdownChart
+        contributingToOSS={dashboardData.timeBreakdown.contributingToOSS}
+        workingOnOwnProjects={dashboardData.timeBreakdown.workingOnOwnProjects}
+      />
+
+      {/* Additional Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard
+          title="Total Contributions"
+          value={dashboardData.additionalMetrics.totalContributions}
+          icon={GitCommit}
+          description="All contributions"
+        />
+        <StatsCard
+          title="Active Projects"
+          value={dashboardData.additionalMetrics.activeProjects}
+          icon={FolderPlus}
+          description="Projects you're working on"
+        />
+        <StatsCard
+          title="Streak"
+          value={`${dashboardData.additionalMetrics.streak} days`}
+          icon={Clock}
+          description="Current contribution streak"
+        />
+        <StatsCard
+          title="Avg PR Merge Time"
+          value={
+            dashboardData.additionalMetrics.averagePRMergeTime !== null
+              ? `${dashboardData.additionalMetrics.averagePRMergeTime.toFixed(1)}h`
+              : "N/A"
+          }
+          icon={GitPullRequest}
+          description="Average time to merge"
+        />
+      </div>
+
+      {/* Project Lists */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Projects</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ProjectList
+            owned={dashboardData.projects.owned}
+            contributed={dashboardData.projects.contributed}
+            starred={dashboardData.projects.starred}
+            clerkUserId={dashboardData.user.id}
+            onStarToggle={handleStarToggle}
+          />
+        </CardContent>
+      </Card>
+    </main>
+  );
+}
+

@@ -146,21 +146,28 @@ The authentication flow is handled entirely through Clerk's hosted UI. No custom
 
 ## Deployment
 
-### Vercel (Frontend)
+### Vercel Deployment (Frontend + Backend)
 
-The project is configured for Vercel deployment:
+This monorepo is configured for **separate Vercel deployments** for frontend and backend, with support for both development and production environments.
 
-1. Connect your repository to Vercel
-2. Set environment variables in Vercel dashboard:
-   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-   - `CLERK_SECRET_KEY`
-3. Deploy!
+**📖 For detailed deployment instructions, see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)**
 
-The `vercel.json` configuration is already set up.
+Quick overview:
+- **Frontend**: Deployed as a separate Vercel Next.js project
+- **Backend**: Deployed as a separate Vercel Python serverless function project
+- **Databases**: Separate MongoDB databases for dev (`openforge-dev`) and prod (`openforge-prod`)
+- **Environment Variables**: Configured per environment (dev/prod) in Vercel dashboard
 
-### Backend Deployment
+The deployment supports:
+- ✅ Separate frontend and backend deployments
+- ✅ Development and production environments
+- ✅ Automatic database selection based on environment
+- ✅ Local development setup
+- ✅ CORS configuration for cross-origin requests
 
-The backend can be deployed to:
+### Alternative Backend Deployment
+
+The backend can also be deployed to:
 
 - **Railway**
 - **Render**

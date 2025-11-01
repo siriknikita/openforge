@@ -1,0 +1,11 @@
+# Python dependencies for OpenForge Backend
+# This file is a fallback if uv is not available on Vercel
+# Primary dependency management uses uv (see pyproject.toml)
+
+fastapi>=0.120.4
+pymongo>=4.15.3
+python-dotenv>=1.2.1
+pydantic-settings>=2.0.0
+uvicorn[standard]>=0.38.0
+mangum>=0.18.0
+

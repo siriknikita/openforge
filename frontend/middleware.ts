@@ -1,6 +1,28 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-export default clerkMiddleware();
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+]);
+
+export default clerkMiddleware(async (auth, req) => {
+  const { userId } = await auth();
+  const url = req.nextUrl.clone();
+
+  // Redirect authenticated users from home page to dashboard
+  if (userId && url.pathname === "/") {
+    url.pathname = "/dashboard";
+    return NextResponse.redirect(url);
+  }
+
+  // Protect dashboard route - require authentication
+  if (!userId && url.pathname === "/dashboard") {
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+});
 
 export const config = {
   matcher: [

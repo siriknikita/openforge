@@ -8,6 +8,7 @@ import {
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
+import Link from "next/link";
 import "./globals.css";
 
 const inter = Inter({
@@ -31,7 +32,9 @@ export default function RootLayout({
         <body className={`${inter.variable} font-sans antialiased`}>
           <header className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
             <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-              <div className="font-bold text-xl">OpenForge</div>
+              <Link href="/" className="font-bold text-xl hover:text-primary transition-colors">
+                OpenForge
+              </Link>
               <nav className="flex items-center gap-4">
                 <SignedOut>
                   <SignInButton mode="modal">
@@ -46,6 +49,12 @@ export default function RootLayout({
                   </SignUpButton>
                 </SignedOut>
                 <SignedIn>
+                  <Link
+                    href="/dashboard"
+                    className="px-4 py-2 text-sm font-medium hover:text-primary transition-colors"
+                  >
+                    Dashboard
+                  </Link>
                   <UserButton />
                 </SignedIn>
               </nav>

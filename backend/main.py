@@ -7,6 +7,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
+from app.routers import dashboard, projects
+from app.config import settings
 
 # Load environment variables
 load_dotenv()
@@ -18,14 +20,19 @@ app = FastAPI(
 )
 
 # CORS middleware configuration
-# Update allowed_origins in production to match your frontend domain
+# Allowed origins are dynamically configured based on environment
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],  # Add your frontend URLs
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register routers
+app.include_router(dashboard.router)
+app.include_router(projects.router)
 
 
 @app.get("/")
