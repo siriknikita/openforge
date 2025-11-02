@@ -19,6 +19,10 @@ export function RepositoryCard({ repository, searchQuery = "" }: RepositoryCardP
     const search = searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : "";
     router.push(`/marketplace/${repository.owner.login}/${repository.name}${search}`);
   };
+
+  // Filter out 'openforge-demo' topic
+  const filteredTopics = repository.topics.filter((topic) => topic !== "openforge-demo");
+
   return (
     <Card 
       className="hover:shadow-md transition-shadow cursor-pointer"
@@ -38,20 +42,22 @@ export function RepositoryCard({ repository, searchQuery = "" }: RepositoryCardP
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {repository.topics.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {repository.topics.slice(0, 4).map((topic) => (
-                <Badge key={topic} variant="secondary" className="text-xs">
-                  {topic}
-                </Badge>
-              ))}
-              {repository.topics.length > 4 && (
-                <Badge variant="secondary" className="text-xs">
-                  +{repository.topics.length - 4} more
-                </Badge>
-              )}
-            </div>
-          )}
+          <div className="flex flex-wrap gap-2 min-h-[24px]">
+            {filteredTopics.length > 0 ? (
+              <>
+                {filteredTopics.slice(0, 4).map((topic) => (
+                  <Badge key={topic} variant="secondary" className="text-xs">
+                    {topic}
+                  </Badge>
+                ))}
+                {filteredTopics.length > 4 && (
+                  <Badge variant="secondary" className="text-xs">
+                    +{filteredTopics.length - 4} more
+                  </Badge>
+                )}
+              </>
+            ) : null}
+          </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Star className="size-4" />

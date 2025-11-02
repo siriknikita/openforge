@@ -44,6 +44,9 @@ export function RepositoryDetail({ repository, onClose }: RepositoryDetailProps)
     }, 300);
   };
 
+  // Filter out 'openforge-demo' topic
+  const filteredTopics = repository.topics.filter((topic) => topic !== "openforge-demo");
+
   return (
     <Card id="repository-detail" className="max-w-4xl mx-auto">
       <CardHeader>
@@ -64,9 +67,9 @@ export function RepositoryDetail({ repository, onClose }: RepositoryDetailProps)
             {repository.description && (
               <p className="text-muted-foreground mb-4">{repository.description}</p>
             )}
-            {repository.topics.length > 0 && (
+            {filteredTopics.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
-                {repository.topics.map((topic) => (
+                {filteredTopics.map((topic) => (
                   <Badge key={topic} variant="secondary">
                     {topic}
                   </Badge>

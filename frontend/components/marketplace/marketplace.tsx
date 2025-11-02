@@ -85,7 +85,7 @@ export function Marketplace() {
         <CardHeader>
           <CardTitle>OpenForge Marketplace</CardTitle>
           <p className="text-sm text-muted-foreground mt-2">
-            Discover GitHub repositories tagged with the &apos;openforge&apos; topic
+            Discover new exciting Open-Source projects on GitHub!
           </p>
         </CardHeader>
         <CardContent>
