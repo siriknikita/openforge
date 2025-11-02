@@ -66,7 +66,7 @@ async def get_repositories(
     db: Optional[Database] = Depends(get_db),
 ):
     """
-    Fetch GitHub repositories with 'openforge' topic
+    Fetch GitHub repositories with 'openforge-demo' topic
     
     Query params:
         - search: Optional filter to search repositories by name
@@ -84,7 +84,7 @@ async def get_repositories(
         return cached_data
     
     # Build GitHub API query
-    query = "topic:openforge"
+    query = "topic:openforge-demo"
     if search_query:
         query = f"{query} {search_query} in:name"
     

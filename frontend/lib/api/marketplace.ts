@@ -59,7 +59,7 @@ export interface RepositoriesResponse {
 }
 
 /**
- * Fetch repositories with 'openforge' topic
+ * Fetch repositories with 'openforge-demo' topic
  */
 export async function fetchRepositories(
   search?: string
