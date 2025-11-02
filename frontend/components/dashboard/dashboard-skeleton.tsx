@@ -43,8 +43,16 @@ export function DashboardSkeleton() {
         ))}
       </div>
 
-      {/* Time Breakdown Chart Skeleton */}
+      {/* Charts Skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[300px] w-full" />
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-32" />

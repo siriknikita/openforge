@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { UserRank } from "@/components/dashboard/user-rank";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { TimeBreakdownChart } from "@/components/dashboard/time-breakdown-chart";
+import { ContributionActivityChart } from "@/components/dashboard/contribution-activity-chart";
 import { ProjectList } from "@/components/dashboard/project-list";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -180,11 +181,18 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Time Breakdown Chart */}
-      <TimeBreakdownChart
-        contributingToOSS={dashboardData.timeBreakdown.contributingToOSS}
-        workingOnOwnProjects={dashboardData.timeBreakdown.workingOnOwnProjects}
-      />
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <TimeBreakdownChart
+          contributingToOSS={dashboardData.timeBreakdown.contributingToOSS}
+          workingOnOwnProjects={dashboardData.timeBreakdown.workingOnOwnProjects}
+        />
+        <ContributionActivityChart
+          commits={dashboardData.stats.commits}
+          pullRequests={dashboardData.stats.pullRequests}
+          issuesClosed={dashboardData.stats.issuesClosed}
+        />
+      </div>
 
       {/* Additional Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
