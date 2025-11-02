@@ -143,39 +143,6 @@ Clerk is integrated into the frontend with:
 - **Protected routes** support (can be added as needed)
 
 The authentication flow is handled entirely through Clerk's hosted UI. No custom forms needed initially, though they can be customized later.
-
-## Deployment
-
-### Vercel Deployment (Frontend + Backend)
-
-This monorepo is configured for **separate Vercel deployments** for frontend and backend, with support for both development and production environments.
-
-**📖 For detailed deployment instructions, see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)**
-
-Quick overview:
-- **Frontend**: Deployed as a separate Vercel Next.js project
-- **Backend**: Deployed as a separate Vercel Python serverless function project
-- **Databases**: Separate MongoDB databases for dev (`openforge-dev`) and prod (`openforge-prod`)
-- **Environment Variables**: Configured per environment (dev/prod) in Vercel dashboard
-
-The deployment supports:
-- ✅ Separate frontend and backend deployments
-- ✅ Development and production environments
-- ✅ Automatic database selection based on environment
-- ✅ Local development setup
-- ✅ CORS configuration for cross-origin requests
-
-### Alternative Backend Deployment
-
-The backend can also be deployed to:
-
-- **Railway**
-- **Render**
-- **Fly.io**
-- **AWS/GCP/Azure**
-
-Make sure to set environment variables for MongoDB connection and other secrets.
-
 ## Project Status
 
 This is an initial setup. Future development will include:
