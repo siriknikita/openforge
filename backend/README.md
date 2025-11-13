@@ -50,11 +50,19 @@ FRONTEND_URL=http://localhost:3000
 # Clerk Authentication (optional but recommended)
 CLERK_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxxxxx
 
-# GitHub API (optional but recommended for higher rate limits)
+# GitHub API (optional but recommended for repository creation)
+# Used as fallback when Clerk OAuth token lacks 'repo' scope
+# Required scopes: 'repo' (Full control of private repositories)
 # GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxx
 ```
 
 See `env.example` for a complete template.
+
+**Important**: For repository creation functionality, you need either:
+- A Clerk OAuth token with `repo` scope, OR
+- A GitHub Personal Access Token with `repo` scope configured as `GITHUB_TOKEN`
+
+See [GITHUB_TOKEN_SETUP.md](../GITHUB_TOKEN_SETUP.md) for detailed setup instructions.
 
 ### Running the Development Server
 
@@ -130,7 +138,12 @@ backend/
 
 ### Projects
 
-- Endpoints for project management and CRUD operations
+- `GET /api/projects` - Get user's projects (owned, contributed, starred)
+- `POST /api/projects/{project_id}/star` - Toggle star status
+- `POST /api/projects/{project_id}/join` - Join a project as contributor
+- `GET /api/projects/github-status` - Check GitHub connection status
+- `POST /api/projects/connect-github` - Connect GitHub account
+- `POST /api/projects/create-github-repo` - Create new GitHub repository with `openforge-demo` topic
 
 ### Marketplace
 
@@ -160,6 +173,20 @@ Configuration is managed in `app/config.py`.
 The backend integrates with Clerk for authentication. JWT tokens can be verified using the `CLERK_SECRET_KEY` environment variable.
 
 See `app/auth/` for authentication modules.
+
+## GitHub Integration
+
+The backend supports GitHub repository creation through two methods:
+
+1. **Clerk OAuth Integration**: Uses GitHub OAuth tokens from Clerk (requires `repo` scope)
+2. **GitHub Personal Access Token**: Fallback using `GITHUB_TOKEN` environment variable
+
+The system automatically uses the best available token:
+- If Clerk OAuth token has `repo` scope → uses Clerk token
+- If Clerk token lacks `repo` scope → falls back to `GITHUB_TOKEN`
+- If no Clerk token available → uses `GITHUB_TOKEN` directly
+
+**For detailed setup instructions, see [GITHUB_TOKEN_SETUP.md](../GITHUB_TOKEN_SETUP.md)**
 
 ## Deployment
 

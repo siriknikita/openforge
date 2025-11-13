@@ -5,10 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from typing import Dict, Any, Optional
 from pymongo.database import Database
 from bson import ObjectId
+from datetime import datetime, timedelta
 from app.database import get_db
 from app.auth.clerk import get_current_user_id
 from app.services.xp_calculator import calculate_level_from_xp
-from app.services.time_tracker import aggregate_time_saved
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -62,7 +62,6 @@ async def get_dashboard_data(
                 "commits": 0,
                 "pullRequests": 0,
                 "issuesClosed": 0,
-                "linesOfCode": 0,
                 "timeSavedMinutes": 0,
             },
             "timeBreakdown": {
@@ -78,7 +77,6 @@ async def get_dashboard_data(
                 "totalContributions": 0,
                 "activeProjects": 0,
                 "streak": 0,
-                "averagePRMergeTime": None,
             },
         }
     
@@ -97,11 +95,56 @@ async def get_dashboard_data(
             "xp": 0,
             "level": 1,
             "github_connected": False,
+            "last_visit_date": None,
+            "current_streak": 0,
         }
         user_id_inserted = user_collection.insert_one(default_user).inserted_id
         user = user_collection.find_one({"_id": user_id_inserted})
     
     user = convert_objectid_to_str(user)
+    
+    # Calculate and update streak
+    now_utc = datetime.utcnow()
+    today = datetime(now_utc.year, now_utc.month, now_utc.day)
+    last_visit_date = user.get("last_visit_date")
+    current_streak = user.get("current_streak", 0)
+    
+    if last_visit_date:
+        # Handle both datetime objects and strings
+        if isinstance(last_visit_date, str):
+            try:
+                # Try parsing ISO format
+                last_visit_date = datetime.fromisoformat(last_visit_date.replace('Z', '+00:00'))
+            except:
+                # If parsing fails, treat as first visit
+                streak = 1
+                last_visit_date = None
+        
+        if last_visit_date and isinstance(last_visit_date, datetime):
+            last_visit = datetime(last_visit_date.year, last_visit_date.month, last_visit_date.day)
+            days_diff = (today - last_visit).days
+            
+            if days_diff == 0:
+                # Same day, don't change streak
+                streak = current_streak
+            elif days_diff == 1:
+                # Yesterday, increment streak
+                streak = current_streak + 1
+            else:
+                # More than 1 day ago, reset to 1
+                streak = 1
+        else:
+            # First visit, start streak at 1
+            streak = 1
+    else:
+        # First visit, start streak at 1
+        streak = 1
+    
+    # Update user's last visit date and streak
+    user_collection.update_one(
+        {"clerk_user_id": user_id},
+        {"$set": {"last_visit_date": now_utc, "current_streak": streak}}
+    )
     
     # Get projects
     project_collection = db.projects
@@ -112,6 +155,24 @@ async def get_dashboard_data(
     owned_projects = list(
         project_collection.find({"owner_id": user_id})
     )
+    
+    # Filter owned projects by current month
+    current_month_start = datetime(now_utc.year, now_utc.month, 1)
+    owned_projects_this_month = []
+    for p in owned_projects:
+        created_at = p.get("created_at")
+        if created_at:
+            # Handle both datetime objects and strings
+            if isinstance(created_at, datetime):
+                if created_at >= current_month_start:
+                    owned_projects_this_month.append(p)
+            elif isinstance(created_at, str):
+                try:
+                    parsed_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                    if parsed_date >= current_month_start:
+                        owned_projects_this_month.append(p)
+                except:
+                    pass
     
     # Get contributed projects (via memberships)
     memberships = list(
@@ -151,21 +212,29 @@ async def get_dashboard_data(
         project_id = str(project["_id"])
         project["starred"] = project_id in starred_project_id_strings
     
-    # Get contributions for stats
+    # Get contributions for stats - filter by joined projects only
     contribution_collection = db.contributions
-    contributions = list(contribution_collection.find({"user_id": user_id}))
+    all_contributions = list(contribution_collection.find({"user_id": user_id}))
     
-    # Calculate stats
+    # Get project IDs from joined projects (contributed projects)
+    joined_project_ids = [str(p["_id"]) for p in contributed_projects]
+    
+    # Filter contributions to only those from joined projects
+    contributions = [
+        c for c in all_contributions 
+        if c.get("project_id") in joined_project_ids
+    ]
+    
+    # Calculate stats from filtered contributions
     commits = sum(1 for c in contributions if c.get("type") == "commit")
     pull_requests = sum(1 for c in contributions if c.get("type") == "pull_request")
     issues_closed = sum(1 for c in contributions if c.get("type") == "issue")
     
-    lines_of_code = sum(
-        c.get("lines_added", 0) - c.get("lines_removed", 0)
-        for c in contributions
+    # Calculate time saved from joined projects only (sum setup_time_estimate_minutes)
+    time_saved_minutes = sum(
+        p.get("setup_time_estimate_minutes", 7) 
+        for p in contributed_projects
     )
-    
-    time_saved_minutes = aggregate_time_saved(all_projects)
     
     # Calculate XP and level
     total_xp = sum(c.get("xp_awarded", 0) for c in contributions)
@@ -181,10 +250,10 @@ async def get_dashboard_data(
     else:
         level = user.get("level", 1)
     
-    # Time breakdown (simplified - would need actual time tracking)
-    # For now, estimate based on contributions
-    contributing_hours = len(contributions) * 0.5  # Estimate 0.5 hours per contribution
-    own_projects_hours = len(owned_projects) * 2.0  # Estimate 2 hours per owned project
+    # Time breakdown - fake data (50/50 split)
+    total_hours = 10.0  # Fake total hours
+    contributing_hours = total_hours * 0.5  # 50% contributing to OSS
+    own_projects_hours = total_hours * 0.5  # 50% working on own projects
     
     # Format projects for response
     def format_project(p):
@@ -207,10 +276,8 @@ async def get_dashboard_data(
         }
     
     # Additional metrics
-    total_contributions = len(contributions)
-    active_projects = len([p for p in all_projects if p])  # Simplified
-    streak = 0  # Placeholder - would need actual streak calculation
-    avg_pr_merge_time = None  # Placeholder - would need actual PR tracking (None when no data)
+    total_contributions = commits  # Use commits count as total contributions
+    active_projects = len(contributed_projects)  # Fake: use count of joined projects
     
     response = {
         "user": {
@@ -224,12 +291,11 @@ async def get_dashboard_data(
             "githubConnected": user.get("github_connected", False),
         },
         "stats": {
-            "newProjects": len(owned_projects),
+            "newProjects": len(owned_projects_this_month),
             "joinedProjects": len(contributed_projects),
             "commits": commits,
             "pullRequests": pull_requests,
             "issuesClosed": issues_closed,
-            "linesOfCode": max(0, lines_of_code),
             "timeSavedMinutes": time_saved_minutes,
         },
         "timeBreakdown": {
@@ -245,7 +311,6 @@ async def get_dashboard_data(
             "totalContributions": total_contributions,
             "activeProjects": active_projects,
             "streak": streak,
-            "averagePRMergeTime": avg_pr_merge_time,
         },
     }
     

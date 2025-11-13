@@ -29,7 +29,6 @@ export interface DashboardData {
     commits: number;
     pullRequests: number;
     issuesClosed: number;
-    linesOfCode: number;
     timeSavedMinutes: number;
   };
   timeBreakdown: {
@@ -45,7 +44,6 @@ export interface DashboardData {
     totalContributions: number;
     activeProjects: number;
     streak: number; // days
-    averagePRMergeTime: number | null; // hours, null when no data
   };
 }
 

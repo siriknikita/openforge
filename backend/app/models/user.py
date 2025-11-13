@@ -17,6 +17,8 @@ class User(BaseModel):
     xp: int = Field(0, description="Total experience points")
     level: int = Field(1, description="Current level")
     github_connected: bool = Field(False, description="Whether GitHub OAuth is connected")
+    last_visit_date: Optional[datetime] = Field(None, description="Last dashboard visit date for streak calculation")
+    current_streak: int = Field(0, description="Current consecutive days streak")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     

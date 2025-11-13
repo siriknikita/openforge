@@ -34,9 +34,10 @@ export function TimeBreakdownChart({
   const contributingPercentage = total > 0 ? (contributingToOSS / total) * 100 : 0;
   const ownProjectsPercentage = total > 0 ? (workingOnOwnProjects / total) * 100 : 0;
 
-  const formatTooltip = (entry: any) => {
-    const percentage = total > 0 ? ((entry.value / total) * 100).toFixed(1) : "0";
-    return `${entry.name}: ${entry.value.toFixed(1)}h (${percentage}%)`;
+  const formatTooltip = (value: any, name: any) => {
+    const numValue = typeof value === 'number' ? value : 0;
+    const percentage = total > 0 ? ((numValue / total) * 100).toFixed(1) : "0";
+    return `${name}: ${numValue.toFixed(1)}h (${percentage}%)`;
   };
 
   // Show placeholder when no time data

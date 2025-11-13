@@ -15,6 +15,7 @@ openforge/
 ├── backend/           # FastAPI backend application
 ├── PRD.md            # Product Requirements Document
 ├── AI_REPLICATION_GUIDE.md  # Design system documentation
+├── GITHUB_TOKEN_SETUP.md    # GitHub authentication setup guide
 └── README.md         # This file
 ```
 
@@ -60,15 +61,22 @@ For more detailed development scripts, see the respective README files:
 - [Frontend Development Scripts](./frontend/README.md#development-scripts)
 - [Backend Development Scripts](./backend/README.md#development-scripts)
 
-## Project Status
+## Documentation
 
-This is an initial setup. Future development will include:
+- **[PRD.md](PRD.md)** - Product Requirements Document
+- **[GITHUB_TOKEN_SETUP.md](GITHUB_TOKEN_SETUP.md)** - GitHub authentication and token setup guide
+- **[DASHBOARD_METRICS_CHANGES.md](DASHBOARD_METRICS_CHANGES.md)** - Dashboard metrics implementation details
+- **[AI_REPLICATION_GUIDE.md](AI_REPLICATION_GUIDE.md)** - Design system documentation
 
-- Real-time collaboration (WebSockets)
-- In-browser IDE (Monaco Editor)
-- AI integration
-- GitHub integration
-- MongoDB database models
+## Features
+
+- ✅ User authentication with Clerk
+- ✅ GitHub repository creation with `openforge-demo` topic
+- ✅ Dashboard with metrics tracking
+- ✅ Project management (create, join, star projects)
+- 🔄 Real-time collaboration (WebSockets) - Coming soon
+- 🔄 In-browser IDE (Monaco Editor) - Coming soon
+- 🔄 AI integration - Coming soon
 
 See [`PRD.md`](PRD.md) for detailed requirements.
 

@@ -23,6 +23,8 @@ class Project(BaseModel):
     owner_id: str = Field(..., description="Clerk user ID of the owner")
     github_repo_id: Optional[str] = Field(None, description="GitHub repository ID")
     metadata: ProjectMetadata = Field(default_factory=ProjectMetadata)
+    joined_members: List[str] = Field(default_factory=list, description="List of usernames who joined this project")
+    setup_time_estimate_minutes: int = Field(7, description="Estimated setup time in minutes (default 7)")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     

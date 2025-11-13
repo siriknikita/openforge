@@ -8,7 +8,9 @@ import { TimeBreakdownChart } from "@/components/dashboard/time-breakdown-chart"
 import { ContributionActivityChart } from "@/components/dashboard/contribution-activity-chart";
 import { ProjectList } from "@/components/dashboard/project-list";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
+import { CreateRepoModal } from "@/components/dashboard/create-repo-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   fetchDashboardData,
   DashboardData,
@@ -20,8 +22,8 @@ import {
   GitCommit,
   GitPullRequest,
   CheckCircle,
-  Code,
   Clock,
+  Plus,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -31,6 +33,7 @@ export default function DashboardPage() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCreateRepoModalOpen, setIsCreateRepoModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -97,6 +100,18 @@ export default function DashboardPage() {
     });
   };
 
+  const handleRepoCreated = async () => {
+    // Reload dashboard data to show the new project
+    if (user) {
+      try {
+        const data = await fetchDashboardData(user.id);
+        setDashboardData(data);
+      } catch (err) {
+        console.error("Failed to reload dashboard data:", err);
+      }
+    }
+  };
+
   if (!isLoaded || isLoading) {
     return (
       <main className="container mx-auto px-4 py-8">
@@ -134,6 +149,18 @@ export default function DashboardPage() {
       {/* Stats Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
+          title="Active Projects"
+          value={dashboardData.additionalMetrics.activeProjects}
+          icon={FolderPlus}
+          description="Projects you're working on"
+        />
+        <StatsCard
+          title="Streak"
+          value={`${dashboardData.additionalMetrics.streak} days`}
+          icon={Clock}
+          description="Current contribution streak"
+        />
+        <StatsCard
           title="New Projects"
           value={dashboardData.stats.newProjects}
           icon={FolderPlus}
@@ -146,10 +173,10 @@ export default function DashboardPage() {
           description="Projects you contributed to"
         />
         <StatsCard
-          title="Total Commits"
+          title="Total Contributions"
           value={dashboardData.stats.commits}
           icon={GitCommit}
-          description="All-time commits"
+          description="Total commits from joined projects"
         />
         <StatsCard
           title="Pull Requests"
@@ -162,12 +189,6 @@ export default function DashboardPage() {
           value={dashboardData.stats.issuesClosed}
           icon={CheckCircle}
           description="Issues resolved"
-        />
-        <StatsCard
-          title="Lines of Code"
-          value={dashboardData.stats.linesOfCode}
-          icon={Code}
-          description="Total LOC contributed"
         />
         <StatsCard
           title="Time Saved"
@@ -194,42 +215,18 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Additional Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          title="Total Contributions"
-          value={dashboardData.additionalMetrics.totalContributions}
-          icon={GitCommit}
-          description="All contributions"
-        />
-        <StatsCard
-          title="Active Projects"
-          value={dashboardData.additionalMetrics.activeProjects}
-          icon={FolderPlus}
-          description="Projects you're working on"
-        />
-        <StatsCard
-          title="Streak"
-          value={`${dashboardData.additionalMetrics.streak} days`}
-          icon={Clock}
-          description="Current contribution streak"
-        />
-        <StatsCard
-          title="Avg PR Merge Time"
-          value={
-            dashboardData.additionalMetrics.averagePRMergeTime !== null
-              ? `${dashboardData.additionalMetrics.averagePRMergeTime.toFixed(1)}h`
-              : "N/A"
-          }
-          icon={GitPullRequest}
-          description="Average time to merge"
-        />
-      </div>
-
       {/* Project Lists */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle>Your Projects</CardTitle>
+          <Button
+            onClick={() => setIsCreateRepoModalOpen(true)}
+            size="sm"
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Create New Project
+          </Button>
         </CardHeader>
         <CardContent>
           <ProjectList
@@ -241,6 +238,16 @@ export default function DashboardPage() {
           />
         </CardContent>
       </Card>
+
+      {/* Create Repository Modal */}
+      {user && (
+        <CreateRepoModal
+          open={isCreateRepoModalOpen}
+          onOpenChange={setIsCreateRepoModalOpen}
+          clerkUserId={user.id}
+          onSuccess={handleRepoCreated}
+        />
+      )}
     </main>
   );
 }
